@@ -945,7 +945,7 @@
         const targetDimension = getTargetDimension();
         const originalBytes = file.size;
         const formatValue = DOM.outputFormat.value;
-        const mimeType = formatValue === 'webp' ? 'image/webp' : formatValue === 'png' ? 'image/png' : formatValue === 'gif' ? 'image/gif' : 'image/jpeg';
+        const mimeType = formatValue === 'webp' ? 'image/webp' : formatValue === 'png' ? 'image/png' : 'image/jpeg';
 
         // 显示尺寸调整提示
         if (targetDimension) {
@@ -1244,7 +1244,7 @@
         const targetBytes = getTargetBytes();
         const targetDimension = getTargetDimension();
         const formatValue = DOM.outputFormat.value;
-        const mimeType = formatValue === 'webp' ? 'image/webp' : formatValue === 'png' ? 'image/png' : formatValue === 'gif' ? 'image/gif' : 'image/jpeg';
+        const mimeType = formatValue === 'webp' ? 'image/webp' : formatValue === 'png' ? 'image/png' : 'image/jpeg';
         showToast(targetBytes ? '批量压缩中' : '自动压缩中', 'success', 2000);
 
         // 逐个压缩
