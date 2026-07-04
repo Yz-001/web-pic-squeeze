@@ -18,7 +18,7 @@
         MAX_DIMENSION: 4096,
         MIN_TARGET_KB: 1,
         TOAST_DURATION: 3000,
-        VALID_TYPES: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+        VALID_TYPES: ['image/jpeg', 'image/png', 'image/webp'],
         MAX_BATCH_COUNT: 20,
         MAX_HISTORY_COUNT: 10
     };
@@ -860,6 +860,11 @@
             file.name.startsWith('image.')
         );
 
+        if (file.type === 'image/gif') {
+            showToast('当前暂不支持 GIF 格式', 'error');
+            return false;
+        }
+
         if (!validTypes.includes(file.type)) {
             // 粘贴的图片可能是 'image/bmp' 或其他类型，仍然允许处理
             if (isPastedImage || file.type.startsWith('image/')) {
@@ -1131,7 +1136,7 @@
                     // 保持原始尺寸，但图片较大，无法压缩到极小目标
                     const actualKB = (blob.size / 1024).toFixed(2);
                     const targetKB = (targetBytes / 1024).toFixed(2);
-                    showToast(`目标 ${targetKB} KB，实际 ${actualKB} KB。因保持原始尺寸 ${state.imageDimension.width}×${state.imageDimension.height}，无法达到目标。建议缩小尺寸或调大目标值`, 'warning', 6000);
+                    showToast(`尺寸过大无法达成目标，已压缩至 ${actualKB} KB`, 'warning', 6000);
                     showWarning = true;
                 } else if (state.imageDimension &&
                     (state.imageDimension.width > 2000 || state.imageDimension.height > 2000)) {
