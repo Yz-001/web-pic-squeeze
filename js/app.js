@@ -680,7 +680,7 @@
                 quality: quality,
                 width: frameInfo.width,
                 height: frameInfo.height,
-                workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+                // workerScript 自动处理
             });
             
             for (const frame of frameInfo.frames) {
@@ -712,7 +712,7 @@
                     quality: quality,
                     width: canvas.width,
                     height: canvas.height,
-                    workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+                    // workerScript 自动处理
                 });
                 
                 gif.addFrame(canvas, { delay: 200, copy: true });
@@ -737,6 +737,54 @@
         });
     }
 
+
+    // 将普通图片转换为 GIF 格式
+    async function convertToGif(file, quality = 10, targetDimension = null) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                if (targetDimension) {
+                    canvas.width = targetDimension.width;
+                    canvas.height = targetDimension.height;
+                } else {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                }
+                
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                const gif = new GIF({
+                    workers: 2,
+                    quality: quality,
+                    width: canvas.width,
+                    height: canvas.height,
+                    // workerScript 自动处理
+                });
+                
+                gif.addFrame(canvas, { delay: 200, copy: true });
+                
+                gif.on('finished', function(blob) {
+                    URL.revokeObjectURL(img.src);
+                    resolve(blob);
+                });
+                
+                gif.on('error', function(err) {
+                    URL.revokeObjectURL(img.src);
+                    reject(err);
+                });
+                
+                gif.render();
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(img.src);
+                reject(new Error('图片加载失败'));
+            };
+            img.src = URL.createObjectURL(file);
+        });
+    }
     // 智能压缩 GIF
     async function compressGif(file, quality = 10) {
         const arrayBuffer = await file.arrayBuffer();
@@ -809,6 +857,11 @@
     // ========================================
 
     function compressWithQuality(file, quality, mimeType = 'image/jpeg', targetDimension = null) {
+        // 如果输出格式是 GIF，使用 gif.js
+        if (mimeType === 'image/gif') {
+            const gifQuality = Math.round(30 - (quality * 29));
+            return convertToGif(file, gifQuality, targetDimension);
+        }
         return new Promise((resolve, reject) => {
             const options = {
                 quality,
