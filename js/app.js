@@ -618,86 +618,16 @@
     }
 
     // ========================================
-    // GIF 压缩（支持动态 GIF）
+
+    // ========================================
+    // GIF 压缩（简化版）
     // ========================================
 
     function isGifFile(file) {
         return file.type === 'image/gif';
     }
 
-    // 使用 gifuct-js 解析 GIF 帧
-    async function decodeGifFrames(arrayBuffer) {
-        const bytes = new Uint8Array(arrayBuffer);
-        
-        try {
-            const gifDecoder = new gifuct.Parser();
-            gifDecoder.parse(bytes);
-            
-            const frames = [];
-            const width = gifDecoder.width;
-            const height = gifDecoder.height;
-            const globalColorTable = gifDecoder.globalColorTable;
-            
-            for (let i = 0; i < gifDecoder.frames.length && i < 100; i++) {
-                const frame = gifDecoder.frames[i];
-                
-                const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                
-                const pixels = gifuct.decodeFrame(frame, width, height, globalColorTable);
-                
-                const imageData = ctx.createImageData(width, height);
-                for (let j = 0; j < pixels.length; j++) {
-                    imageData.data[j] = pixels[j];
-                }
-                ctx.putImageData(imageData, 0, 0);
-                
-                frames.push({
-                    canvas: canvas,
-                    delay: frame.delay || 100
-                });
-            }
-            
-            return {
-                width: width,
-                height: height,
-                frames: frames,
-                isAnimated: frames.length > 1
-            };
-        } catch (e) {
-            console.warn('GIF 帧解析失败:', e);
-            return null;
-        }
-    }
-
-    // 压缩动态 GIF（多帧）
-    async function compressAnimatedGif(frameInfo, quality = 10) {
-        return new Promise((resolve, reject) => {
-            const gif = new GIF({
-                workers: 2,
-                quality: quality,
-                width: frameInfo.width,
-                height: frameInfo.height,
-                // workerScript 自动处理
-            });
-            
-            for (const frame of frameInfo.frames) {
-                gif.addFrame(frame.canvas, {
-                    delay: frame.delay || 100,
-                    copy: true
-                });
-            }
-            
-            gif.on('finished', resolve);
-            gif.on('error', reject);
-            gif.render();
-        });
-    }
-
-    // 压缩静态 GIF（单帧）
-    async function compressStaticGif(file, quality = 10) {
+    async function compressGif(file, quality = 10) {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.onload = () => {
@@ -711,8 +641,7 @@
                     workers: 2,
                     quality: quality,
                     width: canvas.width,
-                    height: canvas.height,
-                    // workerScript 自动处理
+                    height: canvas.height
                 });
                 
                 gif.addFrame(canvas, { delay: 200, copy: true });
@@ -737,6 +666,43 @@
         });
     }
 
+    async function compressGifToTargetSize(file, targetBytes) {
+        let low = 1;
+        let high = 30;
+        let bestResult = null;
+        let iterations = 0;
+        const MAX_ITERATIONS = 10;
+        
+        let result = await compressGif(file, 15);
+        iterations++;
+        
+        if (!targetBytes || result.size <= targetBytes) {
+            return result;
+        }
+        
+        while (iterations < MAX_ITERATIONS) {
+            if (state.single.cancelled || state.batch.cancelled) {
+                throw new Error('用户取消');
+            }
+            
+            const mid = Math.round((low + high) / 2);
+            result = await compressGif(file, mid);
+            iterations++;
+            
+            if (!bestResult || Math.abs(result.size - targetBytes) < Math.abs(bestResult.size - targetBytes)) {
+                bestResult = result;
+            }
+            
+            const sizeDiff = Math.abs(result.size - targetBytes) / targetBytes;
+            if (sizeDiff <= 0.15 || high - low < 3) {
+                return result;
+            }
+            
+            if (result.size > targetBytes) {
+                low = mid;
+            } else {
+                high = mid;
+            }
 
     // 将普通图片转换为 GIF 格式
     async function convertToGif(file, quality = 10, targetDimension = null) {
@@ -760,8 +726,7 @@
                     workers: 2,
                     quality: quality,
                     width: canvas.width,
-                    height: canvas.height,
-                    // workerScript 自动处理
+                    height: canvas.height
                 });
                 
                 gif.addFrame(canvas, { delay: 200, copy: true });
@@ -784,76 +749,11 @@
             };
             img.src = URL.createObjectURL(file);
         });
-    }
-    // 智能压缩 GIF
-    async function compressGif(file, quality = 10) {
-        const arrayBuffer = await file.arrayBuffer();
-        const frameInfo = await decodeGifFrames(arrayBuffer);
-        
-        if (frameInfo && frameInfo.isAnimated && frameInfo.frames.length > 1) {
-            showToast('动态 GIF (' + frameInfo.frames.length + ' 帧)', 'warning', 3000);
-            return await compressAnimatedGif(frameInfo, quality);
-        }
-        
-        return await compressStaticGif(file, quality);
-    }
-
-    async function compressGifToTargetSize(file, targetBytes) {
-        const arrayBuffer = await file.arrayBuffer();
-        const frameInfo = await decodeGifFrames(arrayBuffer);
-        const isAnimated = frameInfo && frameInfo.isAnimated && frameInfo.frames.length > 1;
-        
-        if (isAnimated) {
-            showToast('动态 GIF (' + frameInfo.frames.length + ' 帧)，压缩较慢', 'warning', 3000);
-        }
-        
-        let low = 1;
-        let high = 30;
-        let bestResult = null;
-        let iterations = 0;
-        const MAX_ITERATIONS = isAnimated ? 5 : 10;
-        
-        const compressFunc = isAnimated 
-            ? (q) => compressAnimatedGif(frameInfo, q)
-            : (q) => compressStaticGif(file, q);
-        
-        let result = await compressFunc(15);
-        iterations++;
-        
-        if (!targetBytes || result.size <= targetBytes) {
-            return result;
-        }
-        
-        while (iterations < MAX_ITERATIONS) {
-            if (state.single.cancelled || state.batch.cancelled) {
-                throw new Error('用户取消');
-            }
-            
-            const mid = Math.round((low + high) / 2);
-            result = await compressFunc(mid);
-            iterations++;
-            
-            if (!bestResult || Math.abs(result.size - targetBytes) < Math.abs(bestResult.size - targetBytes)) {
-                bestResult = result;
-            }
-            
-            const sizeDiff = Math.abs(result.size - targetBytes) / targetBytes;
-            if (sizeDiff <= 0.15 || high - low < 3) {
-                return result;
-            }
-            
-            if (result.size > targetBytes) {
-                low = mid;
-            } else {
-                high = mid;
-            }
-        }
+    }        }
         
         return bestResult || result;
     }
 
-    // ========================================
-    // 压缩核心
     // ========================================
 
     function compressWithQuality(file, quality, mimeType = 'image/jpeg', targetDimension = null) {
