@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片压缩工具</title>
+    <link rel="icon" type="image/svg+xml" href="img/mark.svg">
+    <link rel="stylesheet" href="css/styles.css">
+    <meta name="description" content="图片压缩工具，所有处理在浏览器本地完成，不上传服务器，保护您的隐私。">
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- 头部导航 -->
+        <header class="header">
+            <div class="header-inner">
+                <div class="brand">
+                    <img src="img/mark.svg" alt="Logo" class="brand-logo">
+                    <span class="brand-name">图片压缩工具</span>
+                </div>
+                <div class="header-actions">
+                    <button id="themeToggle" class="theme-toggle" title="切换主题">
+                        <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- 模式切换 -->
+            <div class="mode-switcher">
+                <button class="mode-tab active" data-mode="single">单张压缩</button>
+                <button class="mode-tab" data-mode="batch">批量压缩</button>
+            </div>
+
+            <!-- 上传区域 -->
+            <section class="upload-section">
+                <div id="dropZone" class="drop-zone">
+                    <div class="drop-zone-inner">
+                        <div class="upload-icon-wrapper">
+                            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="upload-text">
+                            <p class="upload-main">点击或拖拽上传图片</p>
+                            <p class="upload-sub">支持 JPG / PNG / WebP / GIF 格式</p>
+                        </div>
+                        <div class="upload-hint">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+                            </svg>
+                            <span class="upload-hint-text">支持 Ctrl+V 粘贴</span>
+                        </div>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+                </div>
+                <!-- 重新上传按钮（上传后显示） -->
+                <div id="reuploadBar" class="reupload-bar" style="display: none;">
+                    <button id="reuploadBtn" class="reupload-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        重新上传图片
+                    </button>
+                </div>
+            </section>
+
+            <!-- 设置区域 -->
+            <section class="settings-section" id="settingsSection" style="display: none;">
+                <div class="settings-card">
+                    <div class="settings-row">
+                        <div class="setting-group setting-target-size">
+                            <label class="setting-label">目标大小</label>
+                            <div class="input-row">
+                                <input type="number" id="targetSize" class="input-field" placeholder="留空或0为自动压缩" min="0.001" step="0.1">
+                                <select id="sizeUnit" class="unit-select">
+                                    <option value="MB" selected>MB</option>
+                                    <option value="KB">KB</option>
+                                </select>
+                            </div>
+                            <span class="setting-hint">已智能推荐，可手动修改</span>
+                        </div>
+                        <div class="setting-group setting-quality">
+                            <label class="setting-label">输出格式</label>
+                            <select id="outputFormat" class="format-select">
+                                <option value="jpeg" selected>JPEG (压缩率高)</option>
+                                <option value="png">PNG (无损)</option>
+                                <option value="webp">WebP (高质量)</option>
+                                <option value="gif">GIF (动图)</option>
+                            </select>
+                        </div>
+                        <div class="setting-group setting-dimension">
+                            <label class="setting-label">图片尺寸</label>
+                            <div class="dimension-row">
+                                <select id="dimensionMode" class="dimension-mode-select">
+                                    <option value="original" selected>保持原尺寸</option>
+                                    <option value="percent">按比例缩放</option>
+                                    <option value="custom">自定义尺寸</option>
+                                </select>
+                            </div>
+                            <div class="dimension-custom-row" id="dimensionCustomRow" style="display: none;">
+                                <div class="dimension-inputs">
+                                    <input type="number" id="customWidth" class="dimension-input" placeholder="宽" min="1" max="4096">
+                                    <span class="dimension-x">×</span>
+                                    <input type="number" id="customHeight" class="dimension-input" placeholder="高" min="1" max="4096">
+                                    <button id="lockRatio" class="lock-ratio-btn locked" title="锁定比例">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                            <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="dimension-percent-row" id="dimensionPercentRow" style="display: none;">
+                                    <input type="range" id="scalePercent" class="scale-slider" min="10" max="100" value="80">
+                                    <span class="scale-value"><span id="scaleValueText">80</span>%</span>
+                                </div>
+                            </div>
+                            <span class="setting-hint" id="dimensionHint">保持原始尺寸不变</span>
+                        </div>
+                        <div class="setting-group original-info" id="singleMode">
+                            <label class="setting-label">原始信息</label>
+                            <div class="size-display" id="originalSize">-</div>
+                            <div class="dimension-display" id="originalDimension">-</div>
+                        </div>
+                        <div class="setting-group original-info" id="batchMode" style="display: none;">
+                            <label class="setting-label">已选择</label>
+                            <div class="size-display"><span id="batchCount">0</span> 张</div>
+                        </div>
+                    </div>
+                    <div class="action-row">
+                        <button id="compressBtn" class="btn btn-primary">
+                            <span class="btn-text">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="4 14 10 14 10 20"></polyline>
+                                    <polyline points="20 10 14 10 14 4"></polyline>
+                                    <line x1="14" y1="10" x2="21" y2="3"></line>
+                                    <line x1="3" y1="21" x2="10" y2="14"></line>
+                                </svg>
+                                开始压缩
+                            </span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="spinner"></span>
+                                压缩中...
+                            </span>
+                        </button>
+                        <button id="cancelBtn" class="btn btn-warning" style="display: none;">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            取消
+                        </button>
+                        <button id="resetBtn" class="btn btn-outline">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"></path>
+                                <path d="M3 3v5h5"></path>
+                            </svg>
+                            重置
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 单文件预览区域 -->
+            <section class="preview-section" id="previewSection" style="display: none;">
+                <div class="preview-header-bar">
+                    <h2 class="preview-title">压缩结果</h2>
+                    <div class="preview-stats" id="previewInfo" style="display: none;">
+                        <span class="stat-badge" id="compressionRate"></span>
+                        <span class="stat-badge" id="compressionTime"></span>
+                        <button id="compareModeBtn" class="btn btn-outline btn-small" style="display: none;">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                <line x1="12" y1="3" x2="12" y2="21"></line>
+                            </svg>
+                            滑动对比
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 普通预览模式 -->
+                <div class="preview-grid" id="normalPreview">
+                    <div class="preview-card show">
+                        <div class="preview-card-header">
+                            <span class="preview-label">原图</span>
+                            <span class="preview-size" id="originalSizeLabel">-</span>
+                        </div>
+                        <div class="preview-image-box">
+                            <img id="originalPreview" alt="原图预览">
+                        </div>
+                    </div>
+                    <div class="preview-card" id="compressedItem" style="display: none;">
+                        <div class="preview-card-header">
+                            <span class="preview-label">压缩后</span>
+                            <span class="preview-size" id="compressedSizeLabel">-</span>
+                        </div>
+                        <div class="preview-image-box">
+                            <img id="compressedPreview" alt="压缩后预览">
+                            <div class="compress-placeholder">
+                                <div class="pulse-ring"></div>
+                                <span class="compress-text">正在压缩...</span>
+                            </div>
+                        </div>
+                        <button id="downloadBtn" class="btn btn-success btn-full">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            下载压缩图
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 滑动对比模式 -->
+                <div class="compare-container" id="compareContainer" style="display: none;">
+                    <div class="compare-wrapper">
+                        <div class="compare-image compare-image-original">
+                            <img id="compareOriginal" alt="原图">
+                        </div>
+                        <div class="compare-image compare-image-compressed">
+                            <img id="compareCompressed" alt="压缩后">
+                        </div>
+                        <div class="compare-slider" id="compareSlider">
+                            <div class="compare-slider-line"></div>
+                            <div class="compare-slider-handle">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <!-- 退出对比按钮覆盖在图片上 -->
+                        <button id="exitCompareBtn" class="compare-exit-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            退出对比
+                        </button>
+                    </div>
+                    <div class="compare-labels">
+                        <span class="compare-label compare-label-original">原图 <span id="compareOriginalSize"></span></span>
+                        <span class="compare-label compare-label-compressed">压缩后 <span id="compareCompressedSize"></span></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 批量预览区域 -->
+            <section class="batch-section" id="batchSection" style="display: none;">
+                <div class="batch-header">
+                    <h2 class="preview-title">批量压缩</h2>
+                    <div class="batch-progress" id="batchProgress" style="display: none;">
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar"></div>
+                        </div>
+                        <span id="batchProgressText">准备中...</span>
+                    </div>
+                </div>
+                <div class="batch-list" id="batchList"></div>
+                <button id="batchDownloadAll" class="btn btn-success btn-full" style="display: none;">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    全部下载
+                </button>
+            </section>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <div class="footer-inner">
+                <svg class="footer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0110 0v4"></path>
+                </svg>
+                <span>图片本地处理，不上传服务器</span>
+            </div>
+            <div class="footer-tips">
+                <span class="tip-item">
+                    <kbd>Ctrl</kbd>+<kbd>V</kbd> 粘贴上传
+                </span>
+                <span class="tip-divider">|</span>
+                <span class="tip-item">
+                    <kbd>Enter</kbd> 快速压缩
+                </span>
+                <span class="tip-divider">|</span>
+                <span class="tip-item">
+                    <kbd>Ctrl</kbd>+<kbd>S</kbd> 下载结果
+                </span>
+                <span class="tip-divider">|</span>
+                <span class="tip-item">
+                    <kbd>Esc</kbd> 清空重置
+                </span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast"></div>
+
+    <!-- 图片预览弹窗 -->
+    <div id="imageModal" class="image-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="预览大图">
+        </div>
+        <button class="modal-close" title="关闭">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <div class="modal-hint">点击空白处或按 Esc 关闭</div>
+    </div>
+
+    <!-- 历史记录侧边栏 (PC端右侧悬浮) -->
+    <div id="historySidebar" class="history-sidebar">
+        <div class="history-sidebar-header">
+            <span class="history-sidebar-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span id="historyTitle">压缩历史</span>
+            </span>
+            <div class="history-sidebar-actions">
+                <span id="historyCount" class="history-count">0</span>
+                <button id="historyClear" class="btn-text-link">清空</button>
+            </div>
+        </div>
+        <div id="historyList" class="history-list"></div>
+    </div>
+
+    <!-- 历史记录悬浮按钮 (移动端) -->
+    <button id="historyFab" class="history-fab" style="display: none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span id="historyFabCount" class="history-fab-count">0</span>
+    </button>
+
+    <!-- 引入 compressorjs -->
+    <script src="https://cdn.jsdelivr.net/npm/compressorjs@1.2.1/dist/compressor.min.js"></script>
+    <!-- 引入 gif.js for GIF 压缩 -->
+    <script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.min.js"></script>
+    <!-- 引入 gifuct-js for GIF 帧解析 -->
+    <script src="https://cdn.jsdelivr.net/npm/gifuct-js@2.1.2/dist/gifuct-js.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
