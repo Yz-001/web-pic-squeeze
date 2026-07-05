@@ -486,11 +486,7 @@
             DOM.historyFab.style.display = 'flex';
 
             // 更新标题
-            if (count === 1) {
-                DOM.historyTitle.textContent = '单张压缩历史';
-            } else {
-                DOM.historyTitle.textContent = '压缩历史';
-            }
+            DOM.historyTitle.textContent = '单张压缩历史';
         }
 
         DOM.historyList.innerHTML = state.history.length === 0
