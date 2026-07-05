@@ -516,9 +516,11 @@
                 <div class="history-item-info">
                     <div class="history-item-name">${item.fileName}</div>
                     <div class="history-item-meta">
-                        <span>${formatSize(item.originalSize)}</span>
-                        <span class="arrow">→</span>
-                        <span class="compressed">${formatSize(item.compressedSize)}</span>
+                        <div class="history-item-meta-row">
+                            <span>${formatSize(item.originalSize)}</span>
+                            <span class="arrow">→</span>
+                            <span class="compressed">${formatSize(item.compressedSize)}</span>
+                        </div>
                         <span class="rate">${rateDisplay}</span>
                     </div>
                     <div class="history-item-time">${time}</div>
@@ -1146,15 +1148,17 @@
                     <img id="batchImg${index}" alt="${file.name}">
                 </div>
                 <div class="batch-item-info">
-                    <div class="batch-item-name">${file.name}</div>
+                    <div class="batch-item-name-row">
+                        <div class="batch-item-name">${file.name}</div>
+                        <div class="batch-item-status" id="batchStatus${index}">
+                            <span class="status-pending">待压缩</span>
+                        </div>
+                    </div>
                     <div class="batch-item-size">
                         <span id="batchOriginalSize${index}">${formatSize(file.size)}</span>
                         <span class="size-arrow" id="batchSizeArrow${index}" style="display: none;"> → </span>
                         <span class="size-compressed" id="batchCompressedSize${index}"></span>
                     </div>
-                </div>
-                <div class="batch-item-status" id="batchStatus${index}">
-                    <span class="status-pending">待压缩</span>
                 </div>
                 <div class="batch-item-actions" id="batchActions${index}" style="display: none;">
                     <button class="batch-item-compare" id="batchCompare${index}" title="对比">

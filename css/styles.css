@@ -1197,6 +1197,15 @@ body {
 .batch-item-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.batch-item-name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .batch-item-name {
@@ -1206,12 +1215,16 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 200px;
+    flex-shrink: 1;
 }
 
 .batch-item-size {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: 0.8125rem;
     color: var(--text-muted);
-    margin-top: 2px;
 }
 
 .size-arrow {
@@ -1224,9 +1237,10 @@ body {
 }
 
 .batch-item-status {
-    padding: 6px 12px;
+    flex-shrink: 0;
+    padding: 4px 10px;
     border-radius: var(--radius-sm);
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 500;
 }
 
@@ -1760,11 +1774,18 @@ body {
 
 .history-item-meta {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
     font-size: 0.75rem;
     color: var(--text-muted);
     margin-top: 4px;
+}
+
+.history-item-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .history-item-meta .arrow {
@@ -1773,11 +1794,16 @@ body {
 
 .history-item-meta .compressed {
     color: var(--color-success);
+    font-weight: 500;
 }
 
 .history-item-meta .rate {
+    align-self: flex-start;
     color: var(--color-primary);
-    font-weight: 500;
+    font-weight: 600;
+    background: var(--color-primary-glow);
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
 .history-item-time {
@@ -2357,20 +2383,30 @@ body {
         font-size: 0.8125rem;
     }
 
+    .batch-item-name {
+        font-size: 0.8125rem;
+        max-width: 120px;
+    }
+
+    .batch-item-name-row {
+        gap: 8px;
+    }
+
     .batch-item-size {
         display: flex;
         align-items: center;
         gap: 4px;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
     }
 
     .batch-item-status {
-        order: 4;
-        width: 100%;
-        text-align: center;
-        margin-top: 6px;
-        font-size: 0.75rem;
-        padding: 4px 10px;
+        font-size: 0.6875rem;
+        padding: 3px 8px;
     }
 
     .batch-item-download {
@@ -2420,9 +2456,17 @@ body {
     }
 
     .history-sidebar .history-item-meta {
-        flex-wrap: wrap;
+        gap: 2px;
+        font-size: 0.6875rem;
+    }
+
+    .history-sidebar .history-item-meta-row {
         gap: 4px;
+    }
+
+    .history-sidebar .history-item-meta .rate {
         font-size: 0.625rem;
+        padding: 1px 4px;
     }
 
     .footer {
