@@ -1345,7 +1345,7 @@
 
         if (hasLargeImages && !targetDimension) {
             // 如果是保持原始尺寸导致的，给出更具体的提示
-            showToast(`完成 ${successCount}/${files.length} 张。部分图片因保持原始尺寸无法达到目标值，建议缩小尺寸后重试`, 'warning', 6000);
+            showToast(`完成 ${successCount}/${files.length} 张，部分尺寸较大已压至最佳`, 'warning', 4000);
         } else if (hasLargeImages) {
             showToast(`完成 ${successCount}/${files.length} 张，部分图片因尺寸较大未达目标`, 'warning', 5000);
         } else {
